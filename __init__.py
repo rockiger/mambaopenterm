@@ -1,3 +1,15 @@
+"""Open a terminal from Mamba text editor"""
+__pluginname__ = "Open Terminal"
+__author__ = "Marco Laspe"
+__credits__ = ["Andrei Kopats", "Bryan A. Jones"]
+__license__ = "GPL3"
+__version__ = "0.1.0"
+__maintainer__ = "Marco Laspe"
+__email__ = "marco@rockiger.com"
+__status__ = "Beta"
+# This plugin is a copy of the Enki repl plugin
+# https://github.com/andreikop/enki/tree/master/enki/plugins/openterm.py
+
 import subprocess
 import platform
 import os.path
@@ -41,9 +53,10 @@ class SettingsPage(QWidget):
     def __init__(self, parent, autodetectedCommand):
         QWidget.__init__(self, parent)
 
-        text = "<html>Terminal emulator command.<br/>" + \
-               "Leave empty to autodetect.<br/>" + \
-               "Autodetected value is <i>{}</i></html>".format(autodetectedCommand)
+        text = "<h2>Open Terminal</h2>" +\
+               "<h3>Terminal emulator command.</h3>" + \
+               "<p>Leave empty to autodetect.<br/>" + \
+               "Autodetected value is <i>{}</i></p>".format(autodetectedCommand)
         self._label = QLabel(text, self)
         self.edit = QLineEdit(self)
 
@@ -60,14 +73,17 @@ class Plugin:
         core.uiSettingsManager().aboutToExecute.connect(self._onSettingsDialogAboutToExecute)
 
     def terminate(self):
-        core.actionManager().removeAction('mTools/aOpenTerm')
+        core.actionManager().removeAction('mPlugins/aOpenTerm')
         core.uiSettingsManager().aboutToExecute.disconnect(self._onSettingsDialogAboutToExecute)
 
     def _onSettingsDialogAboutToExecute(self, dialog):
         """UI settings dialogue is about to execute.
         """
         page = SettingsPage(dialog, self._chooseDefaultTerminal())
-        dialog.appendPage(ACTION_TEXT, page, QIcon(':enkiicons/console.png'))
+        icon = QIcon(os.path.join(os.path.dirname(__file__), 'terminal.svg'))
+        dialog.appendPage(ACTION_TEXT, page,
+                          QIcon.fromTheme('utilities-terminal',
+                                          QIcon(icon)))
 
         # Options
         dialog.appendOption(TextOption(dialog, core.config(), "OpenTerm/Term", page.edit))
@@ -93,7 +109,7 @@ class Plugin:
     def _addAction(self):
         """Add action to main menu
         """
-        action = core.actionManager().addAction("mTools/aOpenTerm",
+        action = core.actionManager().addAction("mPlugins/aOpenTerm",
                                                 ACTION_TEXT,
                                                 QIcon.fromTheme('utilities-terminal'))
         core.actionManager().setDefaultShortcut(action, "Ctrl+T")
